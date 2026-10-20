@@ -1,31 +1,29 @@
-"""Default destinations and artifact selection rules."""
+"""Required destination configuration and artifact selection rules."""
 import os
 from pathlib import Path
 
 from dotenv import dotenv_values
 
 
-DEFAULT_ROOT = '/mnt/pfs/personal-xiangyushun'
-DEFAULT_REMOTE = 'bos:rhos-baige-general-beijing-prod/personal/xiangyushun'
-DEFAULT_MOUNT = '/mnt/bos/xiangyushun'
-
-
 def configure_scan(args):
-    """Resolve CLI > environment > explicit/current-directory .env > defaults."""
+    """Require a dotenv file and resolve CLI > environment > dotenv values."""
     env_path = Path(args.env_file) if args.env_file is not None else Path.cwd() / '.env'
-    values = {}
-    if args.env_file is not None or env_path.exists():
+    try:
         with env_path.open(encoding='utf-8') as stream:
             values = dotenv_values(stream=stream, interpolate=False)
-    for name, default in (
-        ('root', DEFAULT_ROOT), ('remote', DEFAULT_REMOTE), ('mount', DEFAULT_MOUNT),
-    ):
+    except FileNotFoundError:
+        raise ValueError(
+            f'Configuration file not found: {env_path}. '
+            'Copy example.env to .env and fill in PFS2BOS_ROOT, '
+            'PFS2BOS_REMOTE and PFS2BOS_MOUNT, or specify --env-file.'
+        ) from None
+    for name in ('root', 'remote', 'mount'):
         key = f'PFS2BOS_{name.upper()}'
         value = getattr(args, name)
         if value is None:
-            value = os.environ.get(key, values.get(key, default))
+            value = os.environ.get(key, values.get(key))
         if value is None or not value.strip():
-            raise ValueError(f'{key} must not be empty')
+            raise ValueError(f'{key} must not be empty; fill in {key} in {env_path} (see example.env)')
         setattr(args, name, value)
 
 

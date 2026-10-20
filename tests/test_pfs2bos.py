@@ -28,6 +28,9 @@ class Workflow(unittest.TestCase):
         self.root.mkdir()
         self.remote.mkdir()
         self.mount.symlink_to(self.remote, target_is_directory=True)
+        self.envpath = self.base / '.env'
+        self.envpath.write_text(
+            f'PFS2BOS_ROOT={self.root}\nPFS2BOS_REMOTE={self.remote}\nPFS2BOS_MOUNT={self.mount}\n')
         self.planpath = self.base / 'plan.json'
         self.args = argparse.Namespace(rclone='rclone', transfers=4)
         self.write('project/data/a.parquet', b'model data\x00\xff')
@@ -40,7 +43,7 @@ class Workflow(unittest.TestCase):
 
     def scan(self, *extra):
         with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
-            rc = cli.main(['scan', '--root', str(self.root), '--path', 'project', '--remote',
+            rc = cli.main(['scan', '--env-file', str(self.envpath), '--root', str(self.root), '--path', 'project', '--remote',
                          str(self.remote), '--mount', str(self.mount), '--out', str(self.planpath), *extra])
         self.assertEqual(rc, 0)
         return plans.load_plan(self.planpath)
@@ -287,7 +290,7 @@ class Workflow(unittest.TestCase):
         self.scan()
         before = self.planpath.read_bytes()
         with contextlib.redirect_stderr(io.StringIO()):
-            self.assertEqual(cli.main(['scan', '--root', str(self.root), '--out', str(self.planpath)]), 1)
+            self.assertEqual(cli.main(['scan', '--env-file', str(self.envpath), '--root', str(self.root), '--out', str(self.planpath)]), 1)
         self.assertEqual(self.planpath.read_bytes(), before)
 
     def test_unknown_files_and_changes_after_scan_not_selected(self):
@@ -336,7 +339,7 @@ class Workflow(unittest.TestCase):
     def test_cli_scan_apply_status_restore(self):
         executable = Path(sys.executable).with_name('pfs2bos')
         commands = [
-            ['scan', '--root', str(self.root), '--path', 'project', '--remote', str(self.remote),
+            ['scan', '--env-file', str(self.envpath), '--root', str(self.root), '--path', 'project', '--remote', str(self.remote),
              '--mount', str(self.mount), '--out', str(self.planpath)],
             ['apply', '--plan', str(self.planpath)],
             ['status', '--plan', str(self.planpath), '--verify'],
