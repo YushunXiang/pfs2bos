@@ -48,6 +48,18 @@ pfs2bos restore --plan plan.json
 
 先用一个很小、已停止写入的产物目录执行上述完整流程，确认原路径读取正常、内容一致、`du` 的本地占用下降，再扩大范围。首次测试可先 `restore` 验证回退。工具不会自动发起真实迁移。
 
+## Codex skill
+
+可选的 [pfs2bos skill](../skills/pfs2bos/SKILL.md) 帮助 Codex 规划、执行、验证和恢复迁移。在仓库根目录运行以下命令，将其安装到 Codex 的 skills 目录：
+
+```bash
+mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
+test ! -e "${CODEX_HOME:-$HOME/.codex}/skills/pfs2bos" && \
+  cp -R skills/pfs2bos "${CODEX_HOME:-$HOME/.codex}/skills/"
+```
+
+如果目标已存在，请先检查现有内容再更新。在新的 Codex 会话中可使用 `$pfs2bos` 或要求 Codex 使用该 skill。安装 skill 不会安装 CLI，也不会配置 rclone、BOS 挂载或 `.env`；请另行完成上面的 CLI 配置。
+
 ## 选择范围
 
 `scan` 默认读取**运行命令时所在目录**的 `.env`，不向上搜索父目录。可复制仓库的 `example.env` 为 `.env` 并修改：

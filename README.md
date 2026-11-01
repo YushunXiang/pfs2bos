@@ -48,6 +48,18 @@ pfs2bos restore --plan plan.json
 
 First, run the complete workflow above on a very small artifact directory that is no longer being written to. Confirm that reading from the original paths works, the contents match, and local disk usage reported by `du` decreases before expanding the scope. During the initial test, you can use `restore` to verify rollback. The tool does not initiate an actual migration automatically.
 
+## Codex skill
+
+The optional [pfs2bos skill](skills/pfs2bos/SKILL.md) helps Codex plan, run, verify, and restore migrations. From the repository root, install it into your Codex skills directory:
+
+```bash
+mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
+test ! -e "${CODEX_HOME:-$HOME/.codex}/skills/pfs2bos" && \
+  cp -R skills/pfs2bos "${CODEX_HOME:-$HOME/.codex}/skills/"
+```
+
+If the destination already exists, inspect it before updating it. In a new Codex session, invoke `$pfs2bos` or ask Codex to use the skill. Installing the skill does not install the CLI or configure rclone, the BOS mount, or `.env`; complete the CLI setup above separately.
+
 ## Selecting the scope
 
 By default, `scan` reads `.env` from **the directory where you run the command**, without searching parent directories. Copy the repository's `example.env` to `.env` and edit it:
