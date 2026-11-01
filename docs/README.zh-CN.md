@@ -26,6 +26,15 @@ pfs2bos scan --path RMBench --out plan.json
 
 从 GitHub 克隆仓库后，可在仓库根目录执行 `python3 -m pip install .`；虚拟环境中省略 `--user`。也支持 `python3 -m pfs2bos`。扫描输出实时文件计数；清单包括 `entries`（选中文件）、`pending`（未知类型，仅待确认）、排除计数和预计释放的已分配字节数。每项记录相对路径、识别理由、目标、大小、设备号、inode、mtime/ctime 纳秒、链接数和权限。
 
+如需不激活虚拟环境就能在任意目录运行 CLI，先在虚拟环境中安装本包，再在 `PATH` 中的目录创建符号链接。例如（替换成实际仓库路径）：
+
+```zsh
+mkdir -p ~/.local/bin
+ln -s /path/to/pfs2bos/.venv/bin/pfs2bos ~/.local/bin/pfs2bos
+```
+
+确保 `~/.local/bin` 已加入 shell 的 `PATH`，并用 `command -v pfs2bos` 检查。移动或删除仓库或虚拟环境后需更新符号链接。从其他目录扫描时请显式指定 `--env-file`；默认 `.env` 来自当前目录。
+
 检查生成的清单，停止训练、下载及其他写入任务，确认挂载可读后手动执行：
 
 ```bash

@@ -26,6 +26,15 @@ pfs2bos scan --path RMBench --out plan.json
 
 After cloning the repository from GitHub, you can run `python3 -m pip install .` from the repository root. Omit `--user` inside a virtual environment. You can also use `python3 -m pfs2bos`. Scanning reports file counts in real time. The plan includes `entries` (selected files), `pending` (unknown types awaiting confirmation only), exclusion counts, and the estimated allocated bytes to be freed. Each item records its relative path, selection reason, destination, size, device number, inode, mtime/ctime in nanoseconds, link count, and permissions.
 
+To run the CLI from any directory without activating its virtual environment, install the package in that environment and create a symlink in a directory on your `PATH`. For example (replace the path with your checkout):
+
+```zsh
+mkdir -p ~/.local/bin
+ln -s /path/to/pfs2bos/.venv/bin/pfs2bos ~/.local/bin/pfs2bos
+```
+
+Ensure `~/.local/bin` is on your shell's `PATH`, then check `command -v pfs2bos`. Moving or removing the checkout or virtual environment breaks the symlink. When scanning from another directory, specify `--env-file` explicitly; the default `.env` is read from the current directory.
+
 Review the generated plan, stop training, downloads, and any other tasks that write files, and confirm that the mount is readable. Then run these commands manually:
 
 ```bash
